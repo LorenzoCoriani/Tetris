@@ -12,11 +12,11 @@ class Casella{
     boolean occupato;
     //costruttori
     Casella(){
-        this.btn = new JLabel();
+        this.lbl = new JLabel();
         this.occupato = false;
     }
     Casella(JLabel lbl){
-        this.btn = btn;
+        this.lbl = lbl;
         this.occupato = false;
     }
     Casella(String etichetta, boolean occupato){
