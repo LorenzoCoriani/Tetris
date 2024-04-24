@@ -20,6 +20,5 @@ class Pezzo{
                 roteaPezzo[j][size-1-i] = pezzo[i][j];
             }
         }
-
     }
 }
