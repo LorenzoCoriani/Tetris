@@ -4,27 +4,23 @@ Classe: 4^F
 Data: 10/3/'24
 Testo: Picross
 */
-import javax.swing.*;
+import java.awt.*;
 
 class Casella{
     //attributi
-    JLabel lbl;
+    Color colore;
     boolean occupato;
     //costruttori
     Casella(){
-        this.lbl = new JLabel();
+        this.colore = Color.BLACK;
         this.occupato = false;
     }
-    Casella(JLabel lbl){
-        this.lbl = lbl;
+    Casella(Color colore){
+        this.colore = colore;
         this.occupato = false;
     }
-    Casella(String etichetta, boolean occupato){
-        this.lbl = new JLabel(etichetta);
-        this.occupato = occupato;
-    }
-    Casella(JLabel lbl, boolean occupato){
-        this.lbl = lbl;
+    Casella(Color colore, boolean occupato){
+        this.colore = colore;
         this.occupato = occupato;
     }
     //metodi
