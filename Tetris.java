@@ -12,14 +12,16 @@ class Tetris{
 	JFrame frame;
 	JPanel pnlGioco;
 
-	boolean boolPezzo[][] = {{true, true,  false, false},
+	boolean boolPezzo[][] = {{true, false,  false, false},
 							 {true, true,  false, false},
-							 {false, false, false, false},
+							 {true, false, false, false},
 							 {false, false, false, false}};
-	Pezzo pezzo = new Pezzo(boolPezzo, Color.YELLOW);
+	Pezzo pezzo = Pezzo.random();//new Pezzo(boolPezzo, new Color(142, 68, 173));
 
 	JLabel[][] lblDisplay;
 	Casella[][] blocchiSolidi;
+
+	//TODO: mettere uno sfondo
 
 	ImageIcon icon = new ImageIcon("./tile.png");
 
@@ -45,7 +47,7 @@ class Tetris{
 				lblDisplay[i][j].setVerticalAlignment(SwingConstants.NORTH);
 				//
 				lblDisplay[i][j].setOpaque(true);
-				lblDisplay[i][j].setBackground(Color.BLACK);
+				lblDisplay[i][j].setBackground(Color.BLACK);//TODO: non impostare niente, useremo uno sfondo
 
 				pnlGioco.add(lblDisplay[i][j]);
 			}
@@ -126,20 +128,34 @@ class Tetris{
 		public void keyReleased(KeyEvent e){}
 		public void keyTyped(KeyEvent e){}
 
-
-
 	}
+	//TODO: metti questi metodi nel Pezzo
 
-	void ruotaPezzo(){
-        int size = pezzo.pezzo.length;
-        boolean[][] roteaPezzo = new boolean[size][size];
-        //
-        for(int i = 0; i<size; i++){
-            for(int j = 0;j<size;j++){
-                //calcolo dalla posizione della cella ruotata
-                roteaPezzo[j][size-1-i] = pezzo.pezzo[i][j];
+	public void ruotaPezzo() {
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = i + 1; j < 4; j++) {
+                boolean temp = pezzo.pezzo[i][j];
+                pezzo.pezzo[i][j] = pezzo.pezzo[j][i];
+                pezzo.pezzo[j][i] = temp;
             }
         }
+
+
+        for (int i = 0; i < 4; i++) {
+            int left = 0;
+            int right = 4 - 1;
+            while (left < right) {
+                // Swap elements (i, left) with (i, right) for row reversal
+                boolean temp = pezzo.pezzo[i][left];
+                pezzo.pezzo[i][left] = pezzo.pezzo[i][right];
+                pezzo.pezzo[i][right] = temp;
+                left++;
+                right--;
+            }
+        }
+
+        disegnaPezzo();
     }
 
 	void spostaPezzo(int spostaX, int spostaY){
@@ -164,17 +180,35 @@ class Tetris{
 		}
 	}
 
-	boolean validaX(int spostaX){ //TODO: fixa collisioni bordi (applicalo a tutti i blocchi del pezzo)
-		boolean valido=false;
+	void solidificaPezzo(){
+		for(int i=0; i<4; i++){
+			for(int j=0; j<4; j++){
+				if(pezzo.pezzo[i][j]){
+					blocchiSolidi[pezzo.y+i][pezzo.x+j].occupato = pezzo.pezzo[i][j];
+					blocchiSolidi[pezzo.y+i][pezzo.x+j].colore = pezzo.tipo;
+					lblDisplay[pezzo.y+i][pezzo.x+j].setBackground(pezzo.tipo);
+					lblDisplay[i+pezzo.y][j+pezzo.x].setIcon(scaledIcon);//TODO: potresti sostituire scaledIcon mettere "animazione"
+				}
+			}
+		}
+		pezzo = Pezzo.random(); //TODO: genera nuovo pezzo casuale
+	}
 
-		//collisioni bordi
-		if(pezzo.x+spostaX>=0 && pezzo.x+spostaX<(width-1)){
-			valido = true;
+	boolean validaX(int spostaX){ //TODO: fixa per pezzo ruotato
+		boolean valido=true;
+
+		//collisioni bordi //programmato a cazzo
+		for(int i=0; i<4 &&valido; i++){
+			for(int j=0; j<4 &&valido; j++){
+				if(pezzo.pezzo[i][j] && !(pezzo.x+spostaX>=0 && pezzo.x+spostaX+j<width)){
+					valido = false;
+				}
+			}
 		}
 
 		//collisioni blocchi
-		for(int i=0; i<4; i++){
-			for(int j=0; j<4; j++){
+		for(int i=0; i<4&&valido; i++){
+			for(int j=0; j<4&&valido; j++){
 				if(pezzo.pezzo[i][j] && validaIntervallo(pezzo.x+spostaX+j, pezzo.y+i) && blocchiSolidi[pezzo.y+i][pezzo.x+spostaX+j].occupato){
 					valido = false;
 				}
@@ -184,19 +218,25 @@ class Tetris{
 		return valido;
 	}
 
-	boolean validaY(int spostaY){ //TODO: fixa collisioni bordi (applicalo a tutti i blocchi del pezzo)
-		boolean valido=false;
+	boolean validaY(int spostaY){
+		boolean valido=true;
 
-		//collisioni bordi
-		if(pezzo.y+spostaY>=0 && pezzo.y+spostaY<(height-1)){
-			valido = true;
+		//collisioni bordi //programmato a cazzo
+		for(int i=0; i<4 &&valido; i++){
+			for(int j=0; j<4 &&valido; j++){
+				if(pezzo.pezzo[i][j] && !(pezzo.y+spostaY+i<height)){
+					valido = false;
+					solidificaPezzo(); //temporaneo
+				}
+			}
 		}
 
 		//collisioni blocchi
-		for(int i=0; i<4; i++){
-			for(int j=0; j<4; j++){
+		for(int i=0; i<4&&valido; i++){
+			for(int j=0; j<4&&valido; j++){
 				if(pezzo.pezzo[i][j] && validaIntervallo(pezzo.x+j, pezzo.y+spostaY+i) && blocchiSolidi[pezzo.y+spostaY+i][pezzo.x+j].occupato ){
 					valido = false;
+					solidificaPezzo(); //temporaneo
 				}
 			}
 		}
@@ -214,7 +254,7 @@ class Tetris{
     void cancellaBlocchi(){
 		for(int i=0; i<height; i++){
 			for(int j=0; j<width; j++){
-				lblDisplay[i][j].setBackground(Color.BLACK);
+				lblDisplay[i][j].setBackground(Color.BLACK); //TODO: mettilo trasparente
 				lblDisplay[i][j].setIcon(null);
 			}
 		}
