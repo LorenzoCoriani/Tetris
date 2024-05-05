@@ -8,7 +8,10 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 
 	JFrame frame;
 	JPanel pnlGioco;
-	JDialog dlgHaiPerso;
+	JDialog dlgGameOver;
+
+	boolean gameOver=false;
+	int righe=0;
 
 	JLabel[][] lblDisplay;
 	Casella[][] blocchiSolidi;
@@ -65,30 +68,40 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 		frame.setVisible(true);
 	}
 
-	void haiPerso(){
-		JLabel lblHaiPerso = new JLabel("Hai Perso!");
+	void gameOver(){
+		JLabel lblGameOver = new JLabel("<html>Game Over <br> Righe: "+righe+"</html>\n");
 
-		lblHaiPerso.setFont(new Font("Arial", Font.PLAIN,64));
-		lblHaiPerso.setHorizontalAlignment(SwingConstants.CENTER);
+		lblGameOver.setFont(new Font("Arial", Font.PLAIN,64));
+		lblGameOver.setHorizontalAlignment(SwingConstants.CENTER);
 
-		dlgHaiPerso = new JDialog(frame, true);
-		dlgHaiPerso.setSize(400,300);
-		dlgHaiPerso.setLocation(500,200); //TODO centra il frame
-		dlgHaiPerso.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dlgGameOver = new JDialog(frame, true);
+		dlgGameOver.setTitle("Non ti preoccupare non hai perso anche se fai cagare");
+		dlgGameOver.setSize(400,300);
+		dlgGameOver.setLocation(500,200); //TODO centra il frame
+		dlgGameOver.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 
-		dlgHaiPerso.add(lblHaiPerso);
+		dlgGameOver.add(lblGameOver);
 
-		dlgHaiPerso.setVisible(true);
+		dlgGameOver.setVisible(true);
 	}
 
 	class PassaTempo implements ActionListener{
 
 		public void actionPerformed(ActionEvent e){
-			cancellaBlocchi();
-			disegnaBlocchi();
-
-			pezzo.spostaPezzo(0, 1);
+			if(gameOver){
+				timer.stop();
+				gameOver();
+			}else{
+				cancellaBlocchi();
+				disegnaBlocchi();
+				if(pezzo.spostaPezzo(0, 1)){ //se si è solidificato
+					righe += pezzo.solidificaPezzo();// se una riga è cancellata
+				}
+				if(!pezzo.disegna()){//se non è disegnabile
+					gameOver = true;
+				}
+			}
 		}
 	}
 
@@ -96,6 +109,7 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 		public void keyPressed(KeyEvent e){
 			int key = e.getExtendedKeyCode();
 
+			boolean solidificato = false;
 			cancellaBlocchi();
 			disegnaBlocchi();
 
@@ -107,23 +121,33 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 				break;*/
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
-					pezzo.spostaPezzo(-1, 0);
+					solidificato = pezzo.spostaPezzo(-1, 0);
 				break;
 				case KeyEvent.VK_RIGHT:
 				case KeyEvent.VK_D:
-					pezzo.spostaPezzo(1, 0);
+					solidificato = pezzo.spostaPezzo(1, 0);
 				break;
 				case KeyEvent.VK_DOWN:
 				case KeyEvent.VK_S:
-					pezzo.spostaPezzo(0, 1);
+					solidificato = pezzo.spostaPezzo(0, 1);
 				break;
 				case KeyEvent.VK_SPACE:
 					System.out.println("Ruota");
-					pezzo.ruotaPezzo();
+					pezzo.ruotaPezzo(); //TODO: restituire gameover del disegna();
 				break;
-				default:
-					pezzo.disegna();
+
 			}
+			gameOver = !(pezzo.disegna());
+
+			if(solidificato){
+				righe += pezzo.solidificaPezzo();
+			}
+
+			if(gameOver){
+				timer.stop();
+				gameOver();
+			}
+
 		}
 		public void keyReleased(KeyEvent e){}
 		public void keyTyped(KeyEvent e){}

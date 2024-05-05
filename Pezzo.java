@@ -85,12 +85,19 @@ class Pezzo{//TODO: rinomina attributi
 				tipoPezzo = CostantiTetris.TIPO_T;
 				break;
 		}
-		Pezzo pezzo = new Pezzo(boolPezzo, tipoPezzo, 4, 0, lblDisplay, blocchiSolidi, scaledIcon);
+		Pezzo pezzo = new Pezzo(boolPezzo, tipoPezzo, CostantiTetris.INITIAL_X, CostantiTetris.INITIAL_Y, lblDisplay, blocchiSolidi, scaledIcon);
 		return pezzo;
 
     }
 
-	void disegna(){
+	boolean disegna(){ //restituisce falso se si non può disegnare
+		boolean disegnabile=true;
+
+		for(int i=0; disegnabile&& i<CostantiTetris.WIDTH; i++){
+			if(blocchiSolidi[0][i].occupato){
+				disegnabile = false;
+			}
+		}
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
 				if(pezzo[i][j]){
@@ -99,18 +106,22 @@ class Pezzo{//TODO: rinomina attributi
 				}
 			}
 		}
+
+		return disegnabile;
 	}
 
-    void spostaPezzo(int spostaX, int spostaY){
+    boolean spostaPezzo(int spostaX, int spostaY){//restituisce se lo spostamento causa la solidifcazione
+		boolean solidifica=false;
 
 		if(validaX(spostaX))
 			x += spostaX;
-		if(validaY(spostaY))
+		if(validaY(spostaY)){
 			y += spostaY;
+		}else{
+			solidifica = true;
+		}
 
-
-		disegna();
-
+		return solidifica;
     }
 
     public void ruotaPezzo() {
@@ -165,9 +176,11 @@ class Pezzo{//TODO: rinomina attributi
 
     }
 
-    void solidificaPezzo(){ //TODO: sistema robe che fanno cagare tipo boolean perso
-		boolean perso=false;
-		boolean riga=true;
+    int solidificaPezzo(){//restituisce se una riga è cancellata //TODO: sposta in una classe apposita per blocchiSolidi
+		boolean gameOver=false;
+		boolean riga=true; //riga trovata
+
+		int righe=0;//cancellate
 
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
@@ -177,7 +190,7 @@ class Pezzo{//TODO: rinomina attributi
 					lblDisplay[y+i][x+j].setBackground(tipo);
 					lblDisplay[i+y][j+x].setIcon(scaledIcon);//TODO: potresti sostituire scaledIcon mettere "animazione"
 					if(y+i == 0)
-						perso = true;
+						gameOver = true;
 				}
 			}
 		}
@@ -188,19 +201,20 @@ class Pezzo{//TODO: rinomina attributi
 				if(!blocchiSolidi[i][j].occupato)
 					riga = false;
 			}
-			if(riga)
+			if(riga){
 				cancellaRiga(i);
+				righe++;
+			}
+
 		}
-		if(perso){
-			System.out.println("Hai perso");//TODO: aggiungi dialog
-			//pezzo = ; //TODO:distruggi il pezzo
-		}else{
-            Pezzo nuovoPezzo = random(); //TODO: crealo solo dopo che le righe vanno in basso
-			x = 4; 
-            y = 0;
-            tipo = nuovoPezzo.tipo;
-            this.pezzo = nuovoPezzo.pezzo;
+		if(!gameOver){
+            Pezzo nuovoPezzo = random(); //TODO: provvisorio crealo solo dopo che le righe vanno in basso
+			x = CostantiTetris.INITIAL_X;
+			y = CostantiTetris.INITIAL_Y;
+			tipo = nuovoPezzo.tipo;
+			this.pezzo = nuovoPezzo.pezzo;
 		}
+		return righe;
 	}
 
     private boolean validaX(int spostaX){
@@ -235,7 +249,7 @@ class Pezzo{//TODO: rinomina attributi
 			for(int j=0; j<4 &&valido; j++){
 				if(pezzo[i][j] && !(y+spostaY+i<CostantiTetris.HEIGHT)){
 					valido = false;
-					solidificaPezzo(); //temporaneo
+					//solidificaPezzo(); //temporaneo
 				}
 			}
 		}
@@ -245,7 +259,7 @@ class Pezzo{//TODO: rinomina attributi
 			for(int j=0; j<4&&valido; j++){
 				if(pezzo[i][j] && validaIntervallo(x+j, y+spostaY+i) && blocchiSolidi[y+spostaY+i][x+j].occupato ){
 					valido = false;
-					solidificaPezzo(); //temporaneo
+					//solidificaPezzo(); //temporaneo
 				}
 			}
 		}
