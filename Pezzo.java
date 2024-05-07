@@ -34,7 +34,7 @@ class Pezzo{//TODO: rinomina attributi
 
     Pezzo random(){ //TODO: fixa
         boolean boolPezzo[][];
-        Color tipoPezzo;// = Color.WHITE;
+        Color tipoPezzo;
 
 		/*int[] numeri = {0, 1, 2, 3, 4, 5, 6};
 		ArrayList<Integer> lista = new ArrayList<>();
@@ -124,8 +124,26 @@ class Pezzo{//TODO: rinomina attributi
 		return solidifica;
     }
 
+	boolean cadutaIstantanea(){//restituisce se lo spostamento causa la solidificazione
+		int spostaY=1; //spostamento
+
+		while(validaY(spostaY)){
+			y += spostaY;
+		}
+
+		return spostaPezzo(0, spostaY);
+	}
+
     public void ruotaPezzo() {
-        boolean[][] matriceTemp = pezzo;
+        boolean[][] matriceTemp = new boolean[4][4];
+
+		//copio pezzo in matriceTemp
+		for(int i=0; i<4; i++){
+			for(int j=0; j<4; j++){
+				matriceTemp[i][j] = pezzo[i][j];
+			}
+		}
+
 
         int left, right;
         int quanto=3;
@@ -158,9 +176,17 @@ class Pezzo{//TODO: rinomina attributi
             }
         }
 
+		//controllo bordi //non so se sia 100% giusto però okeyx
+		for(int i=0; i<4 &&valido; i++){
+			for(int j=0; j<4 &&valido; j++){
+				if(matriceTemp[i][j] && !validaIntervallo(x+j,y+i)){
+					valido = false;
+				}
+			}
+		}
 
-		//controllo blocchi fissi //TODO: fixa
-		/*for(int i=0; i<4&&valido; i++){
+		//controllo blocchi fissi
+		for(int i=0; i<4&&valido; i++){
 			for(int j=0; j<4&&valido; j++){
 				if(matriceTemp[i][j] && blocchiSolidi[y+i][x+j].occupato){
 					valido = false;
@@ -169,10 +195,13 @@ class Pezzo{//TODO: rinomina attributi
 		}
 
 		if(valido){
-
-		}*/
-		pezzo = matriceTemp;
-		disegna();
+			//applico rotazione, copio matriceTemp in pezzo
+			for(int i=0; i<4; i++){
+				for(int j=0; j<4; j++){
+					pezzo[i][j] = matriceTemp[i][j];
+				}
+			}
+		}
 
     }
 

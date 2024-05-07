@@ -72,10 +72,13 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 		JLabel lblGameOver = new JLabel("<html>Game Over <br> Righe: "+righe+"</html>\n");
 
 		lblGameOver.setFont(new Font("Arial", Font.PLAIN,64));
+		lblGameOver.setForeground(Color.WHITE);
+		lblGameOver.setOpaque(true);
+		lblGameOver.setBackground(Color.BLACK);
 		lblGameOver.setHorizontalAlignment(SwingConstants.CENTER);
 
 		dlgGameOver = new JDialog(frame, true);
-		dlgGameOver.setTitle("Non ti preoccupare non hai perso anche se fai cagare");
+		dlgGameOver.setTitle("GAME OVER");
 		dlgGameOver.setSize(400,300);
 		dlgGameOver.setLocation(500,200); //TODO centra il frame
 		dlgGameOver.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -114,11 +117,11 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 			disegnaBlocchi();
 
 			switch(key){
-				/*case KeyEvent.VK_UP:
+				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
 					System.out.println("Su");
-					//mette pezzo direttamente;
-				break;*/
+					solidificato = pezzo.cadutaIstantanea();
+				break;
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
 					solidificato = pezzo.spostaPezzo(-1, 0);
@@ -133,7 +136,7 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 				break;
 				case KeyEvent.VK_SPACE:
 					System.out.println("Ruota");
-					pezzo.ruotaPezzo(); //TODO: restituire gameover del disegna();
+					pezzo.ruotaPezzo();
 				break;
 
 			}
