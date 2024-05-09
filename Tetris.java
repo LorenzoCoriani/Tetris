@@ -1,19 +1,35 @@
+/*
+Autore: Dario Nappi, Lorenzo Coriani
+Classe: 4^F
+Data: per ill 15/5/24
+Testo: Tetris
+*/
+import java.io.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
+import javax.sound.sampled.*;
+
+
+class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline 
 	final int frameRatio = 40;
 	int pausa=500; //millisecondi
 
-	JFrame frame;
+	JFrame frame; //TODO: mettere al centro dello schermo
 	JPanel pnlGioco;
+	JPanel pnlScorta; //per pezzo di riserva
+	JPanel pnlProssimi; //pezzi
+
 	JDialog dlgGameOver;
 
-	boolean gameOver=false;
-	int righe=0;
+	boolean gameOver=false; //TODO: forse aggiungere punteggio su file e chiedere nome scoreboard.txt
+	int righe=0; //TODO: mostra righe
 
 	JLabel[][] lblDisplay;
+	JLabel[][] lblScorta;
+
 	Casella[][] blocchiSolidi;
 
 	//TODO: mettere uno sfondo
@@ -24,21 +40,32 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 	ImageIcon scaledIcon = new ImageIcon(image);
 
 	Timer timer;
+	GestoreAudio audio = new GestoreAudio();
 
 	Pezzo pezzo;
+	Pezzo scorta;
 
 	Tetris(){
+		audio.suona("./tetris_music.wav", true);
+
 		frame = new JFrame();
+		frame.setLayout(new GridBagLayout());
+
 		timer = new Timer(pausa, new PassaTempo());
 
 		pnlGioco = new JPanel(new GridLayout(CostantiTetris.HEIGHT,CostantiTetris.WIDTH));
+		pnlScorta = new JPanel(new GridLayout(4,4));
 
 		lblDisplay = new JLabel[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
+		lblScorta = new JLabel[4][4];
+
 		blocchiSolidi = new Casella[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
 		
 		pezzo = new Pezzo(lblDisplay, blocchiSolidi, scaledIcon);
 		pezzo = pezzo.random();
 		
+		pnlGioco.setPreferredSize(new Dimension(frameRatio*CostantiTetris.WIDTH, frameRatio*CostantiTetris.HEIGHT));
+
 		for(int i=0; i<CostantiTetris.HEIGHT; i++){
 			for(int j=0; j<CostantiTetris.WIDTH; j++){
 				blocchiSolidi[i][j] = new Casella();
@@ -53,8 +80,37 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 				pnlGioco.add(lblDisplay[i][j]);
 			}
 		}
+
+		pnlScorta.setPreferredSize(new Dimension(frameRatio*4, frameRatio*4));
+
+		for(int i=0; i<4; i++){
+			for(int j=0; j<4; j++){
+				lblScorta[i][j] = new JLabel();
+				lblScorta[i][j].setOpaque(true);
+				lblScorta[i][j].setPreferredSize(new Dimension(70,70));
+				lblScorta[i][j].setBackground(Color.BLACK);
+				pnlScorta.add(lblScorta[i][j]);
+			}
+		}
+		//constraints //TODO: metti in ordine sta roba
+		GridBagConstraints constrPnlGioco = new GridBagConstraints();
+        constrPnlGioco.gridx = 1;
+        constrPnlGioco.gridy = 0;
+        constrPnlGioco.fill = GridBagConstraints.NONE; // Prevent resizing
+        constrPnlGioco.anchor = GridBagConstraints.CENTER; // Center the panel
+        constrPnlGioco.weightx = 0.0; // Don't allow horizontal stretching
+        constrPnlGioco.weighty = 0.0; // Don't allow vertical stretching
+
+        GridBagConstraints constrPnlScorta = new GridBagConstraints();
+        constrPnlScorta.gridx = 0;
+        constrPnlScorta.gridy = 0;
+        constrPnlScorta.fill = GridBagConstraints.NONE; // Prevent resizing
+        constrPnlScorta.anchor = GridBagConstraints.NORTHWEST; // Center the panel
+        constrPnlScorta.weightx = 0.0; // Don't allow horizontal stretching
+        constrPnlScorta.weighty = 0.0; // Don't allow vertical stretching
 		//add
-		frame.add(pnlGioco,"Center");
+		frame.add(pnlScorta, constrPnlScorta);
+		frame.add(pnlGioco, constrPnlGioco);
 
 		//eventi
 		frame.addKeyListener(new TastoPremuto());
@@ -63,7 +119,8 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 		timer.start();
 
 		//impostazioni frame
-		frame.setSize(frameRatio*CostantiTetris.WIDTH, frameRatio*CostantiTetris.HEIGHT);
+		//frame.setSize(frameRatio*CostantiTetris.WIDTH, frameRatio*(CostantiTetris.HEIGHT);
+		frame.setSize(700, 900); //TODO: metti una roba migliore
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
@@ -108,6 +165,29 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 		}
 	}
 
+	class GestoreAudio{
+		private Clip clip;
+
+		void suona(String nomeFile, boolean loop){
+			try{
+				File file = new File(nomeFile);
+				AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
+				clip = AudioSystem.getClip();
+
+				if(loop){
+					clip.loop(Clip.LOOP_CONTINUOUSLY);
+				}else{
+					clip.start();
+				}
+
+				clip.open(audioStream);
+				clip.start();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+    }
+
 	class TastoPremuto implements KeyListener{
 		public void keyPressed(KeyEvent e){
 			int key = e.getExtendedKeyCode();
@@ -119,8 +199,7 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 			switch(key){
 				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
-					System.out.println("Su");
-					solidificato = pezzo.cadutaIstantanea();
+					pezzo.ruotaPezzo();
 				break;
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
@@ -134,11 +213,17 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 				case KeyEvent.VK_S:
 					solidificato = pezzo.spostaPezzo(0, 1);
 				break;
-				case KeyEvent.VK_SPACE:
-					System.out.println("Ruota");
-					pezzo.ruotaPezzo();
+				case KeyEvent.VK_Z:
+				case KeyEvent.VK_CONTROL:
+					System.out.println("ti manca ruotare a sinistra");
 				break;
-
+				case KeyEvent.VK_SPACE:
+					solidificato = pezzo.cadutaIstantanea();
+				break;
+				case KeyEvent.VK_SHIFT:
+				case KeyEvent.VK_C:
+					scortaPezzo();
+				break;
 			}
 			gameOver = !(pezzo.disegna());
 
@@ -160,7 +245,7 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
     void cancellaBlocchi(){
 		for(int i=0; i<CostantiTetris.HEIGHT; i++){
 			for(int j=0; j<CostantiTetris.WIDTH; j++){
-				lblDisplay[i][j].setBackground(Color.BLACK); //TODO: mettilo trasparente
+				lblDisplay[i][j].setBackground(Color.BLACK); //TODO: forse mettilo trasparente
 				lblDisplay[i][j].setIcon(null);
 			}
 		}
@@ -175,6 +260,37 @@ class Tetris{ //TODO: usare definizioni da https://tetris.wiki/Tetris_Guideline
 			}
 		}
     }
+
+    void aggiornaScorta(){
+		for(int i=0; i<4; i++){
+			for(int j=0; j<4; j++){
+
+				if(scorta.getBlocco(i,j)){
+					lblScorta[i][j].setBackground(scorta.getTipo());
+					lblScorta[i][j].setIcon(scaledIcon);
+				}else{
+					lblScorta[i][j].setBackground(Color.BLACK);
+					lblScorta[i][j].setIcon(null);
+				}
+			}
+		}
+    }
+
+	void scortaPezzo(){ //TODO: mostra pezzo di scorta
+		if(scorta != null && pezzo.isScortaDisponibile()){
+			Pezzo tmp = scorta;
+			scorta = pezzo;
+			pezzo = tmp;
+
+			pezzo.setX(CostantiTetris.INITIAL_X);
+			pezzo.setY(CostantiTetris.INITIAL_Y);
+		}else if(pezzo.isScortaDisponibile()){
+			scorta = pezzo;
+			pezzo = pezzo.random();
+		}
+		pezzo.occupaScorta();
+		aggiornaScorta();
+	}
 
 	public static void main(String[] args){
 		new Tetris();

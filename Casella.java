@@ -1,8 +1,8 @@
 /*
-Autore: Dario Nappi
+Autore: Dario Nappi, Lorenzo Coriani
 Classe: 4^F
-Data: 10/3/'24
-Testo: Picross
+Data: per ill 15/5/24
+Testo: Tetris
 */
 import java.awt.*;
 

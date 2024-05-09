@@ -1,37 +1,43 @@
+/*
+Autore: Dario Nappi, Lorenzo Coriani
+Classe: 4^F
+Data: per ill 15/5/24
+Testo: Tetris
+*/
 import java.awt.Color;
 class CostantiTetris{
-    public static final boolean PEZZO_I[][] = {{false,false, false, false},
-                                               {true,  true,  true, true},
+    public static final boolean PEZZO_I[][] = {{false, false, false, false},
+                                               {true,  true,  true,  true},
                                                {false, false, false, false},
                                                {false, false, false, false}};
 
-    public static final boolean PEZZO_J[][] = {{true, false, false, false},
-                                               {true,  true,  true, false},
+    public static final boolean PEZZO_J[][] = {{true,  false, false, false},
+                                               {true,  true,  true,  false},
                                                {false, false, false, false},
                                                {false, false, false, false}};
 
-    public static final boolean PEZZO_L[][] = {{false, false, true, false},
-                                               {true,  true,  true, false},
+    public static final boolean PEZZO_L[][] = {{false, false, true,  false},
+                                               {true,  true,  true,  false},
                                                {false, false, false, false},
                                                {false, false, false, false}};
     
-    public static final boolean PEZZO_O[][] = {{true, true, false, false},
+    public static final boolean PEZZO_O[][] = {{true,  true,  false, false},
                                                {true,  true,  false, false},
                                                {false, false, false, false},
                                                {false, false, false, false}};
     
-    public static final boolean PEZZO_S[][] = {{false, true, true, false},
+    public static final boolean PEZZO_S[][] = {{false, true,  true,  false},
                                                {true,  true,  false, false},
                                                {false, false, false, false},
                                                {false, false, false, false}};
     
-    public static final boolean PEZZO_Z[][] = {{true, true, false, false},
-                                               {false, true,  true, false},
+    public static final boolean PEZZO_Z[][] = {{true,  true,  false, false},
+                                               {false, true,  true,  false},
                                                {false, false, false, false},
                                                {false, false, false, false}};
     
-    public static final boolean PEZZO_T[][] = {{false, true, false, false},
-                                               {true,  true,  true, false},
+    public static final boolean PEZZO_T[][] = {{false, true,  false, false},
+                                               {true,  true,  true,  false},
                                                {false, false, false, false},
                                                {false, false, false, false}};
 

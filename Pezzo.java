@@ -1,38 +1,51 @@
+/*
+Autore: Dario Nappi, Lorenzo Coriani
+Classe: 4^F
+Data: per ill 15/5/24
+Testo: Tetris
+*/
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
 
-class Pezzo{//TODO: rinomina attributi
+class Pezzo{
 
-    Color tipo;
-    boolean pezzo[][];
+    private Color tipo;
+    private boolean blocchi[][];
 
     private JLabel[][] lblDisplay;
     private Casella[][] blocchiSolidi;
-    private ImageIcon scaledIcon;
+    private ImageIcon immagine;
 
-    int x,y;
+    private int x,y;
+	boolean scortaDisponibile; //temporaneo, mettere set/get
 
-    Pezzo(boolean pezzo[][], Color tipo, int x, int y, JLabel[][] lblDisplay, Casella[][] blocchiSolidi, ImageIcon scaledIcon){
-        this.pezzo = pezzo;
+
+    Pezzo(boolean blocchi[][], Color tipo, int x, int y, JLabel[][] lblDisplay, Casella[][] blocchiSolidi, ImageIcon immagine){
+        this.blocchi = blocchi;
         this.tipo = tipo;
         this.x = x;
         this.y = y;
 
         this.lblDisplay = lblDisplay;
         this.blocchiSolidi = blocchiSolidi;
-        this.scaledIcon = scaledIcon;
+        this.immagine = immagine;
+
+		scortaDisponibile=true;
     }
 
-    Pezzo(JLabel[][] lblDisplay, Casella[][] blocchiSolidi, ImageIcon scaledIcon){
+    Pezzo(JLabel[][] lblDisplay, Casella[][] blocchiSolidi, ImageIcon immagine){
         this.lblDisplay = lblDisplay;
         this.blocchiSolidi = blocchiSolidi;
-        this.scaledIcon = scaledIcon;
+        this.immagine = immagine;
+
+		scortaDisponibile=true;
     }
 
     //metodi
 
-    Pezzo random(){ //TODO: fixa
+
+    Pezzo random(){ //TODO: implementare randomizzazione 7-bag
         boolean boolPezzo[][];
         Color tipoPezzo;
 
@@ -85,7 +98,7 @@ class Pezzo{//TODO: rinomina attributi
 				tipoPezzo = CostantiTetris.TIPO_T;
 				break;
 		}
-		Pezzo pezzo = new Pezzo(boolPezzo, tipoPezzo, CostantiTetris.INITIAL_X, CostantiTetris.INITIAL_Y, lblDisplay, blocchiSolidi, scaledIcon);
+		Pezzo pezzo = new Pezzo(boolPezzo, tipoPezzo, CostantiTetris.INITIAL_X, CostantiTetris.INITIAL_Y, lblDisplay, blocchiSolidi, immagine);
 		return pezzo;
 
     }
@@ -100,9 +113,9 @@ class Pezzo{//TODO: rinomina attributi
 		}
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
-				if(pezzo[i][j]){
+				if(blocchi[i][j]){
 					lblDisplay[i+y][j+x].setBackground(tipo);
-					lblDisplay[i+y][j+x].setIcon(scaledIcon);
+					lblDisplay[i+y][j+x].setIcon(immagine);
 				}
 			}
 		}
@@ -134,13 +147,13 @@ class Pezzo{//TODO: rinomina attributi
 		return spostaPezzo(0, spostaY);
 	}
 
-    public void ruotaPezzo() {
+    public void ruotaPezzo() {//in senso orario //TODO: aggiungere metodo rotazione antioraria, forse implementare Super Rotation System
         boolean[][] matriceTemp = new boolean[4][4];
 
-		//copio pezzo in matriceTemp
+		//copio blocchi in matriceTemp
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
-				matriceTemp[i][j] = pezzo[i][j];
+				matriceTemp[i][j] = blocchi[i][j];
 			}
 		}
 
@@ -176,7 +189,7 @@ class Pezzo{//TODO: rinomina attributi
             }
         }
 
-		//controllo bordi //non so se sia 100% giusto però okeyx
+		//controllo bordi
 		for(int i=0; i<4 &&valido; i++){
 			for(int j=0; j<4 &&valido; j++){
 				if(matriceTemp[i][j] && !validaIntervallo(x+j,y+i)){
@@ -195,10 +208,10 @@ class Pezzo{//TODO: rinomina attributi
 		}
 
 		if(valido){
-			//applico rotazione, copio matriceTemp in pezzo
+			//applico rotazione, copio matriceTemp in blocchi
 			for(int i=0; i<4; i++){
 				for(int j=0; j<4; j++){
-					pezzo[i][j] = matriceTemp[i][j];
+					blocchi[i][j] = matriceTemp[i][j];
 				}
 			}
 		}
@@ -213,11 +226,11 @@ class Pezzo{//TODO: rinomina attributi
 
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
-				if(pezzo[i][j]){
-					blocchiSolidi[y+i][x+j].occupato = pezzo[i][j];
+				if(blocchi[i][j]){
+					blocchiSolidi[y+i][x+j].occupato = blocchi[i][j];
 					blocchiSolidi[y+i][x+j].colore = tipo;
 					lblDisplay[y+i][x+j].setBackground(tipo);
-					lblDisplay[i+y][j+x].setIcon(scaledIcon);//TODO: potresti sostituire scaledIcon mettere "animazione"
+					lblDisplay[i+y][j+x].setIcon(immagine);//TODO: potresti sostituire immagine mettere "animazione"
 					if(y+i == 0)
 						gameOver = true;
 				}
@@ -241,8 +254,10 @@ class Pezzo{//TODO: rinomina attributi
 			x = CostantiTetris.INITIAL_X;
 			y = CostantiTetris.INITIAL_Y;
 			tipo = nuovoPezzo.tipo;
-			this.pezzo = nuovoPezzo.pezzo;
+			this.blocchi = nuovoPezzo.blocchi;
 		}
+
+		scortaDisponibile=true;
 		return righe;
 	}
 
@@ -252,7 +267,7 @@ class Pezzo{//TODO: rinomina attributi
 		//collisioni bordi
 		for(int i=0; i<4 &&valido; i++){
 			for(int j=0; j<4 &&valido; j++){
-				if(pezzo[i][j] && !(x+spostaX+j>=0 && x+spostaX+j<CostantiTetris.WIDTH)){
+				if(blocchi[i][j] && !(x+spostaX+j>=0 && x+spostaX+j<CostantiTetris.WIDTH)){
 					valido = false;
 				}
 			}
@@ -261,7 +276,7 @@ class Pezzo{//TODO: rinomina attributi
 		//collisioni blocchi
 		for(int i=0; i<4&&valido; i++){
 			for(int j=0; j<4&&valido; j++){
-				if(pezzo[i][j] && validaIntervallo(x+spostaX+j, y+i) && blocchiSolidi[y+i][x+spostaX+j].occupato){
+				if(blocchi[i][j] && validaIntervallo(x+spostaX+j, y+i) && blocchiSolidi[y+i][x+spostaX+j].occupato){
 					valido = false;
 				}
 			}
@@ -276,7 +291,7 @@ class Pezzo{//TODO: rinomina attributi
 		//collisioni bordi
 		for(int i=0; i<4 &&valido; i++){
 			for(int j=0; j<4 &&valido; j++){
-				if(pezzo[i][j] && !(y+spostaY+i<CostantiTetris.HEIGHT)){
+				if(blocchi[i][j] && !(y+spostaY+i<CostantiTetris.HEIGHT)){
 					valido = false;
 					//solidificaPezzo(); //temporaneo
 				}
@@ -286,7 +301,7 @@ class Pezzo{//TODO: rinomina attributi
 		//collisioni blocchi
 		for(int i=0; i<4&&valido; i++){
 			for(int j=0; j<4&&valido; j++){
-				if(pezzo[i][j] && validaIntervallo(x+j, y+spostaY+i) && blocchiSolidi[y+spostaY+i][x+j].occupato ){
+				if(blocchi[i][j] && validaIntervallo(x+j, y+spostaY+i) && blocchiSolidi[y+spostaY+i][x+j].occupato ){
 					valido = false;
 					//solidificaPezzo(); //temporaneo
 				}
@@ -296,7 +311,7 @@ class Pezzo{//TODO: rinomina attributi
 		return valido;
 	}
 
-	private boolean validaIntervallo(int x, int y) {
+	private boolean validaIntervallo(int x, int y){
 		return y >= 0 && y < CostantiTetris.HEIGHT && x >= 0 && x < CostantiTetris.WIDTH;
 	}
 
@@ -312,6 +327,33 @@ class Pezzo{//TODO: rinomina attributi
 				blocchiSolidi[i+1][j].occupato = blocchiSolidi[i][j].occupato;
 			}
 		}
+	}
+	//set
+	void setX(int x){
+		this.x = x;
+	}
+	void setY(int y){
+		this.y = y;
+	}
+
+	void occupaScorta(){
+		scortaDisponibile = false;
+	}
+	void liberaScorta(){
+		scortaDisponibile = true;
+	}
+
+	boolean isScortaDisponibile(){
+		return scortaDisponibile;
+	}
+
+	//get
+	Color getTipo(){
+		return tipo;
+	}
+
+	boolean getBlocco(int i, int j){
+		return blocchi[i][j];
 	}
 }
 
