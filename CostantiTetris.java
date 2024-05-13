@@ -54,6 +54,6 @@ class CostantiTetris{
 
     public static final int INITIAL_X = 4;
     public static final int INITIAL_Y = 0;
-
+    public static final int N_NEXT = 3;
     
 }

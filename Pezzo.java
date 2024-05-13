@@ -249,13 +249,6 @@ class Pezzo{
 			}
 
 		}
-		if(!gameOver){
-            Pezzo nuovoPezzo = random(); //TODO: provvisorio crealo solo dopo che le righe vanno in basso
-			x = CostantiTetris.INITIAL_X;
-			y = CostantiTetris.INITIAL_Y;
-			tipo = nuovoPezzo.tipo;
-			this.blocchi = nuovoPezzo.blocchi;
-		}
 
 		scortaDisponibile=true;
 		return righe;
