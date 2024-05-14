@@ -6,7 +6,6 @@ Testo: Tetris
 */
 import java.awt.*;
 import javax.swing.*;
-import java.util.*;
 
 class Pezzo{
 
@@ -43,65 +42,6 @@ class Pezzo{
     }
 
     //metodi
-
-
-    Pezzo random(){ //TODO: implementare randomizzazione 7-bag
-        boolean boolPezzo[][];
-        Color tipoPezzo;
-
-		/*int[] numeri = {0, 1, 2, 3, 4, 5, 6};
-		ArrayList<Integer> lista = new ArrayList<>();
-		*/
-        int num_estratto = 0;
-        /*int rand = 0;
-
-		if(lista.isEmpty()){
-			for(int num : numeri){
-				lista.add(num);
-			}
-		}else{
-			rand = (int) (Math.random()*lista.size());
-
-			num_estratto = lista.remove(rand);
-
-			System.out.println(""+lista.size());
-		}*/
-		num_estratto = (int) (Math.random()*7);
-
-		switch(num_estratto){
-			case 0:
-				boolPezzo = CostantiTetris.PEZZO_I;
-				tipoPezzo = CostantiTetris.TIPO_I;
-				break;
-			case 1:
-				boolPezzo = CostantiTetris.PEZZO_J;
-				tipoPezzo = CostantiTetris.TIPO_J;
-				break;
-			case 2:
-				boolPezzo = CostantiTetris.PEZZO_L;
-				tipoPezzo = CostantiTetris.TIPO_L;
-				break;
-			case 3:
-				boolPezzo = CostantiTetris.PEZZO_O;
-				tipoPezzo = CostantiTetris.TIPO_O;
-				break;
-			case 4:
-				boolPezzo = CostantiTetris.PEZZO_S;
-				tipoPezzo = CostantiTetris.TIPO_S;
-				break;
-			case 5:
-				boolPezzo = CostantiTetris.PEZZO_Z;
-				tipoPezzo = CostantiTetris.TIPO_Z;
-				break;
-			default:
-				boolPezzo = CostantiTetris.PEZZO_T;
-				tipoPezzo = CostantiTetris.TIPO_T;
-				break;
-		}
-		Pezzo pezzo = new Pezzo(boolPezzo, tipoPezzo, CostantiTetris.INITIAL_X, CostantiTetris.INITIAL_Y, lblDisplay, blocchiSolidi, immagine);
-		return pezzo;
-
-    }
 
 	boolean disegna(){ //restituisce falso se si non può disegnare
 		boolean disegnabile=true;
@@ -147,76 +87,94 @@ class Pezzo{
 		return spostaPezzo(0, spostaY);
 	}
 
-    public void ruotaPezzo() {//in senso orario //TODO: aggiungere metodo rotazione antioraria, forse implementare Super Rotation System
-        boolean[][] matriceTemp = new boolean[4][4];
+    public void ruotaPezzo(int verso) { // verso: 1 orario, -1 antiorario
+		boolean[][] matriceTemp = new boolean[4][4];
 
-		//copio blocchi in matriceTemp
-		for(int i=0; i<4; i++){
-			for(int j=0; j<4; j++){
+		//copia blocchi in matriceTemp
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				matriceTemp[i][j] = blocchi[i][j];
 			}
 		}
+		int quanto = 3;
 
+		if (tipo == CostantiTetris.TIPO_I)
+			quanto = 4;
+		else if (tipo == CostantiTetris.TIPO_O)
+			quanto = 0;
 
-        int left, right;
-        int quanto=3;
-
-        boolean temp;
-		boolean valido = true;
-
-        if(tipo == CostantiTetris.TIPO_I)
-            quanto=4;
-        else if(tipo == CostantiTetris.TIPO_O)
-            quanto=0;
-
-        for (int i = 0; i < quanto; i++) {
-            for (int j = i + 1; j < quanto; j++) {
-                temp = matriceTemp[i][j];
-                matriceTemp[i][j] = matriceTemp[j][i];
-                matriceTemp[j][i] = temp;
-            }
-        }
-        for (int i = 0; i < quanto; i++) {
-            left = 0;
-            right = quanto - 1;
-            while (left < right) {
-                // Swap elements (i, left) with (i, right) for row reversal
-                temp = matriceTemp[i][left];
-                matriceTemp[i][left] = matriceTemp[i][right];
-                matriceTemp[i][right] = temp;
-                left++;
-                right--;
-            }
-        }
+		if(verso == 1) { // ruota in senso orario
+			// Transpose the matrix
+			for (int i = 0; i < quanto; i++) {
+				for (int j = i + 1; j < quanto; j++) {
+					boolean temp = matriceTemp[i][j];
+					matriceTemp[i][j] = matriceTemp[j][i];
+					matriceTemp[j][i] = temp;
+				}
+			}
+			// Reverse each row
+			for (int i = 0; i < quanto; i++) {
+				int left = 0;
+				int right = quanto - 1;
+				while (left < right) {
+					boolean temp = matriceTemp[i][left];
+					matriceTemp[i][left] = matriceTemp[i][right];
+					matriceTemp[i][right] = temp;
+					left++;
+					right--;
+				}
+			}
+		}else if(verso == -1) { // ruota in senso antiorario
+			// Transpose the matrix
+			for (int i = 0; i < quanto; i++) {
+				for (int j = i + 1; j < quanto; j++) {
+					boolean temp = matriceTemp[i][j];
+					matriceTemp[i][j] = matriceTemp[j][i];
+					matriceTemp[j][i] = temp;
+				}
+			}
+			// Reverse each column
+			for (int i = 0; i < quanto; i++) {
+				int top = 0;
+				int bottom = quanto - 1;
+				while (top < bottom) {
+					boolean temp = matriceTemp[top][i];
+					matriceTemp[top][i] = matriceTemp[bottom][i];
+					matriceTemp[bottom][i] = temp;
+					top++;
+					bottom--;
+				}
+			}
+		}
 
 		//controllo bordi
-		for(int i=0; i<4 &&valido; i++){
-			for(int j=0; j<4 &&valido; j++){
-				if(matriceTemp[i][j] && !validaIntervallo(x+j,y+i)){
+		boolean valido = true;
+		for (int i = 0; i < 4 && valido; i++) {
+			for (int j = 0; j < 4 && valido; j++) {
+				if (matriceTemp[i][j] && !validaIntervallo(x + j, y + i)) {
 					valido = false;
 				}
 			}
 		}
 
-		//controllo blocchi fissi
-		for(int i=0; i<4&&valido; i++){
-			for(int j=0; j<4&&valido; j++){
-				if(matriceTemp[i][j] && blocchiSolidi[y+i][x+j].occupato){
+		//controllo blocchiSolidi
+		for (int i = 0; i < 4 && valido; i++) {
+			for (int j = 0; j < 4 && valido; j++) {
+				if (matriceTemp[i][j] && blocchiSolidi[y + i][x + j].occupato) {
 					valido = false;
 				}
 			}
 		}
 
-		if(valido){
-			//applico rotazione, copio matriceTemp in blocchi
-			for(int i=0; i<4; i++){
-				for(int j=0; j<4; j++){
+		if(valido){//applica rotazione
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
 					blocchi[i][j] = matriceTemp[i][j];
 				}
 			}
 		}
+	}
 
-    }
 
     int solidificaPezzo(){//restituisce se una riga è cancellata //TODO: sposta in una classe apposita per blocchiSolidi
 		boolean gameOver=false;

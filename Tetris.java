@@ -45,6 +45,8 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 	Timer timer;
 	GestoreAudio audio = new GestoreAudio();
 
+	GeneratorePezzo generaPezzo;
+
 	Pezzo pezzo;
 	Pezzo scorta;
 	LinkedList<Pezzo> prossimi = new LinkedList<>(); //per adesso
@@ -67,8 +69,8 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 
 		blocchiSolidi = new Casella[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
 		
-		pezzo = new Pezzo(lblDisplay, blocchiSolidi, scaledIcon);
-		pezzo = pezzo.random();
+		generaPezzo = new GeneratorePezzo(lblDisplay, blocchiSolidi, scaledIcon);
+		pezzo = generaPezzo.random();
 
 		pnlGioco.setPreferredSize(new Dimension(frameRatio*CostantiTetris.WIDTH, frameRatio*CostantiTetris.HEIGHT));
 
@@ -104,7 +106,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 			JPanel pnlProssimo = new JPanel(new GridLayout(4,4));
 			pnlProssimo.setPreferredSize(new Dimension(frameRatio*4, frameRatio*4));
 
-			prossimi.add(pezzo.random());
+			prossimi.add(generaPezzo.random());
 			pnlProssimi.add(pnlProssimo);
 			lblProssimi.add(new JLabel[4][4]);
 			for(int j=0; j<4; j++){
@@ -256,7 +258,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 			switch(key){
 				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
-					pezzo.ruotaPezzo();
+					pezzo.ruotaPezzo(1);
 				break;
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
@@ -272,7 +274,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 				break;
 				case KeyEvent.VK_Z:
 				case KeyEvent.VK_CONTROL:
-					System.out.println("ti manca ruotare a sinistra");
+					pezzo.ruotaPezzo(-1);
 				break;
 				case KeyEvent.VK_SPACE:
 					solidificato = pezzo.cadutaIstantanea();
@@ -352,29 +354,29 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 
 	void nuovoPezzo(){
 		if(!gameOver){
-            //Pezzo nuovoPezzo = pezzo.random(); //TODO: provvisorio crealo solo dopo che le righe vanno in basso
-
 			pezzo = prossimi.removeFirst();
-			prossimi.addLast(pezzo.random());
+			prossimi.addLast(generaPezzo.random());
 
 			aggiornaProssimi();
 		}
 	}
 
 	void scortaPezzo(){ //TODO: mostra pezzo di scorta
-		if(scorta != null && pezzo.isScortaDisponibile()){
-			Pezzo tmp = scorta;
-			scorta = pezzo;
-			pezzo = tmp;
+		if(pezzo.isScortaDisponibile()){
+			if(scorta != null){
+				Pezzo tmp = scorta;
+				scorta = pezzo;
+				pezzo = tmp;
 
-			pezzo.setX(CostantiTetris.INITIAL_X);
-			pezzo.setY(CostantiTetris.INITIAL_Y);
-		}else if(pezzo.isScortaDisponibile()){
-			scorta = pezzo;
-			pezzo = pezzo.random();
+				pezzo.setX(CostantiTetris.INITIAL_X);
+				pezzo.setY(CostantiTetris.INITIAL_Y);
+			}else{
+				scorta = pezzo;
+				nuovoPezzo();
+			}
+			pezzo.occupaScorta();
+			aggiornaScorta();
 		}
-		pezzo.occupaScorta();
-		aggiornaScorta();
 	}
 
 	public static void main(String[] args){
