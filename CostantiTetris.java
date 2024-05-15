@@ -1,7 +1,7 @@
 /*
 Autore: Dario Nappi, Lorenzo Coriani
 Classe: 4^F
-Data: per ill 15/5/24
+Data: per il 15/5/24
 Testo: Tetris
 */
 import java.awt.Color;
@@ -48,6 +48,8 @@ class CostantiTetris{
     public static final Color TIPO_S = new Color(102, 253, 0);
     public static final Color TIPO_Z = new Color(254, 16, 60);
     public static final Color TIPO_T = new Color(184, 2, 253);
+    //
+    public static final Color BACKGROUND_COLOR = new Color(15, 16, 62);
 
     public static final int WIDTH = 10;
     public static final int HEIGHT = 20;

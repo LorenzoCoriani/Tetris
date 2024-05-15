@@ -1,45 +1,57 @@
 /*
 Autore: Dario Nappi, Lorenzo Coriani
 Classe: 4^F
-Data: per ill 15/5/24
+Data: per il 15/5/24
 Testo: Tetris
 */
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Vector;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 
 import javax.sound.sampled.*;
 
 
-class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline 
+class Tetris{//https://tetris.wiki/Tetris_Guideline
 	final int frameRatio = 40;
 	int pausa=500; //millisecondi
 
-	JFrame frame; //TODO: mettere al centro dello schermo
+	JFrame frame;
 	JPanel pnlGioco;
-	JPanel pnlScorta; //per pezzo di riserva
+	//
+	JPanel pnlScorta; //pnlPezzoScorta + JLabel "HOLD"
+	JPanel pnlPezzoScorta; //per pezzo di riserva
+	//
 	JPanel pnlProssimi;
 
 	JDialog dlgGameOver;
 
-	boolean gameOver=false; //TODO: forse aggiungere punteggio su file e chiedere nome scoreboard.txt
-	int righe=0; //TODO: mostra righe
+	JTextField txtGiocatore;
+	JButton btnInvia;
+
+	boolean gameOver=false;
+	int righe=0;
 
 	JLabel[][] lblDisplay;
 	JLabel[][] lblScorta;
 	ArrayList<JLabel[][]> lblProssimi = new ArrayList<>();
 
-	Casella[][] blocchiSolidi;
+	JLabel lblHold;//scritta HOLD
+	JLabel lblNext;//scritta NEXT
 
-	//TODO: mettere uno sfondo
+	Font font = new Font("Arial", Font.PLAIN,48);
+	Border bordo = BorderFactory.createLineBorder(Color.DARK_GRAY, 2);
+
+	Casella[][] blocchiSolidi;
 
 	ImageIcon icon = new ImageIcon("./tile.png");
 
-	Image image = icon.getImage().getScaledInstance(frameRatio, frameRatio, Image.SCALE_SMOOTH); //TODO: capire sta cosa
+	Image image = icon.getImage().getScaledInstance(frameRatio, frameRatio, Image.SCALE_SMOOTH);
 	ImageIcon scaledIcon = new ImageIcon(image);
 
 	Timer timer;
@@ -54,25 +66,61 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 	Tetris(){
 		audio.suona("./tetris_music.wav", true);
 		frame = new JFrame();
-		frame.getContentPane().setBackground(new Color(0,0,100)); //TODO: colore temporaneo?
+		frame.getContentPane().setBackground(CostantiTetris.BACKGROUND_COLOR);
 		frame.setLayout(new GridBagLayout());
+
+		txtGiocatore = new JTextField();
+
+		txtGiocatore.setHorizontalAlignment(SwingConstants.CENTER);
+		txtGiocatore.setFont(font);
+		txtGiocatore.setForeground(Color.WHITE);
+		txtGiocatore.setBackground(Color.BLACK);
+
+		btnInvia = new JButton("INVIA");
+		btnInvia.setFont(font);
+		btnInvia.setForeground(Color.WHITE);
+		btnInvia.setBackground(Color.BLACK);
 
 		timer = new Timer(pausa, new PassaTempo());
 
 		pnlGioco = new JPanel(new GridLayout(CostantiTetris.HEIGHT,CostantiTetris.WIDTH));
-		pnlScorta = new JPanel(new GridLayout(4,4));
-
-		pnlProssimi = new JPanel(new GridLayout(CostantiTetris.N_NEXT, 1));
+		pnlGioco.setPreferredSize(new Dimension(frameRatio*CostantiTetris.WIDTH, frameRatio*CostantiTetris.HEIGHT));
+		//
+		pnlScorta = new JPanel(new GridLayout(2,1));
+		pnlScorta.setOpaque(false);
+		pnlPezzoScorta = new JPanel(new GridLayout(4,4));
+		pnlPezzoScorta.setBorder(bordo);
+		//
+		pnlProssimi = new JPanel(new GridLayout(CostantiTetris.N_NEXT+1, 1));//+1 per JLabel "NEXT"
+		pnlProssimi.setOpaque(false);
 
 		lblDisplay = new JLabel[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
 		lblScorta = new JLabel[4][4];
 
+		lblHold = new JLabel("HOLD");
+		lblNext = new JLabel("NEXT");
+		//
+		lblHold.setForeground(Color.WHITE);
+		lblNext.setForeground(Color.WHITE);
+		//
+		lblHold.setOpaque(false);
+		lblNext.setOpaque(false);
+		//
+		lblHold.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNext.setHorizontalAlignment(SwingConstants.CENTER);
+		//
+		lblHold.setVerticalAlignment(SwingConstants.NORTH);
+		lblNext.setVerticalAlignment(SwingConstants.NORTH);
+		//
+		lblHold.setFont(font);
+		lblNext.setFont(font);
+
+
 		blocchiSolidi = new Casella[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
-		
+
 		generaPezzo = new GeneratorePezzo(lblDisplay, blocchiSolidi, scaledIcon);
 		pezzo = generaPezzo.random();
 
-		pnlGioco.setPreferredSize(new Dimension(frameRatio*CostantiTetris.WIDTH, frameRatio*CostantiTetris.HEIGHT));
 
 		for(int i=0; i<CostantiTetris.HEIGHT; i++){
 			for(int j=0; j<CostantiTetris.WIDTH; j++){
@@ -83,13 +131,13 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 				lblDisplay[i][j].setVerticalAlignment(SwingConstants.NORTH);
 				//
 				lblDisplay[i][j].setOpaque(true);
-				lblDisplay[i][j].setBackground(Color.BLACK);//TODO: non impostare niente, useremo uno sfondo
+				lblDisplay[i][j].setBackground(Color.BLACK);
 
 				pnlGioco.add(lblDisplay[i][j]);
 			}
 		}
 
-		pnlScorta.setPreferredSize(new Dimension(frameRatio*4, frameRatio*4));
+		pnlPezzoScorta.setPreferredSize(new Dimension(frameRatio*4, frameRatio*4));
 
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
@@ -97,7 +145,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 				lblScorta[i][j].setOpaque(true);
 				lblScorta[i][j].setPreferredSize(new Dimension(70,70));
 				lblScorta[i][j].setBackground(Color.BLACK);
-				pnlScorta.add(lblScorta[i][j]);
+				pnlPezzoScorta.add(lblScorta[i][j]);
 			}
 		}
 
@@ -105,6 +153,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 		for(int i=0; i<CostantiTetris.N_NEXT; i++){
 			JPanel pnlProssimo = new JPanel(new GridLayout(4,4));
 			pnlProssimo.setPreferredSize(new Dimension(frameRatio*4, frameRatio*4));
+			pnlProssimo.setBorder(bordo);
 
 			prossimi.add(generaPezzo.random());
 			pnlProssimi.add(pnlProssimo);
@@ -127,81 +176,116 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 			}
 		}
 
-
-		//constraints //TODO: metti in ordine sta roba, guarda cosa puoi eliminare
+		//constraints
 		GridBagConstraints constrPnlGioco = new GridBagConstraints();
         constrPnlGioco.gridx = 1;
         constrPnlGioco.gridy = 0;
-        constrPnlGioco.fill = GridBagConstraints.NONE; // Prevent resizing
-        constrPnlGioco.anchor = GridBagConstraints.CENTER; // Center the panel
-        constrPnlGioco.weightx = 0.0; // Don't allow horizontal stretching
-        constrPnlGioco.weighty = 0.0; // Don't allow vertical stretching
+        constrPnlGioco.anchor = GridBagConstraints.CENTER;
 
         GridBagConstraints constrPnlScorta = new GridBagConstraints();
         constrPnlScorta.gridx = 0;
         constrPnlScorta.gridy = 0;
-        constrPnlScorta.fill = GridBagConstraints.NONE; // Prevent resizing
-        constrPnlScorta.anchor = GridBagConstraints.NORTHWEST; // Center the panel
-        constrPnlScorta.weightx = 0.0; // Don't allow horizontal stretching
-        constrPnlScorta.weighty = 0.0; // Don't allow vertical stretching
+        constrPnlScorta.anchor = GridBagConstraints.NORTHWEST;
 
         GridBagConstraints constrPnlProssimo = new GridBagConstraints();
         constrPnlProssimo.gridx = 2;
         constrPnlProssimo.gridy = 0;
-        constrPnlProssimo.fill = GridBagConstraints.NONE; // Prevent resizing
-        constrPnlProssimo.anchor = GridBagConstraints.NORTHEAST; // Center the panel
-        constrPnlProssimo.weightx = 0.0; // Don't allow horizontal stretching
-        constrPnlProssimo.weighty = 0.0; // Don't allow vertical stretching
+        constrPnlProssimo.anchor = GridBagConstraints.NORTHEAST;
 		//add
+
+		pnlScorta.add(pnlPezzoScorta);
+		pnlScorta.add(lblHold);
+
+		pnlProssimi.add(lblNext);
+
 		frame.add(pnlScorta, constrPnlScorta);
 		frame.add(pnlGioco, constrPnlGioco);
 		frame.add(pnlProssimi, constrPnlProssimo);
 
 		//eventi
 		frame.addKeyListener(new TastoPremuto());
-
+		btnInvia.addActionListener(new ClickInvia());
 		//timer
 		timer.start();
 
 		//impostazioni frame
-		//frame.setSize(frameRatio*CostantiTetris.WIDTH, frameRatio*(CostantiTetris.HEIGHT);
-		frame.setSize(1000, 900); //TODO: metti una roba migliore
+		frame.setSize(1000, 900);
+		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
 
-	void gameOver(){
-		JLabel lblGameOver = new JLabel("<html>Game Over <br> Righe: "+righe+"</html>\n");
+	private void gameOver(){
+		JPanel pnlInvia = new JPanel(new GridLayout(2,1));
+		JLabel lblGameOver = new JLabel("<html>Game Over <br> Righe: "+righe+"<br><br>nickname:</html>\n");
 
-		lblGameOver.setFont(new Font("Arial", Font.PLAIN,64));
+		lblGameOver.setFont(font);
 		lblGameOver.setForeground(Color.WHITE);
 		lblGameOver.setOpaque(true);
 		lblGameOver.setBackground(Color.BLACK);
 		lblGameOver.setHorizontalAlignment(SwingConstants.CENTER);
+		lblGameOver.setVerticalAlignment(SwingConstants.BOTTOM);
 
-		dlgGameOver = new JDialog(frame, true);
+		dlgGameOver = new JDialog(frame);
 		dlgGameOver.setTitle("GAME OVER");
-		dlgGameOver.setSize(400,300);
-		dlgGameOver.setLocation(500,200); //TODO centra il frame
+		dlgGameOver.setSize(400,500);
+		dlgGameOver.setLocationRelativeTo(frame);
+		Point pos = dlgGameOver.getLocation();
+		dlgGameOver.setUndecorated(true);
+		dlgGameOver.getRootPane().setBorder(bordo);
+		dlgGameOver.setLocation(pos.x, pos.y/2);
 		dlgGameOver.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-		dlgGameOver.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-			}
-		});
+		//add
+		pnlInvia.add(lblGameOver);
+		pnlInvia.add(txtGiocatore);
+		pnlInvia.add(btnInvia);
 
-		dlgGameOver.add(lblGameOver);
+		dlgGameOver.add(lblGameOver, "Center");
+		dlgGameOver.add(pnlInvia, "South");
 
-		//TODO: suono hai perso;
-		audio.stop();//tmp?
+		audio.stop();
 
 		dlgGameOver.setVisible(true);
 	}
 
+	private void aggiungiInLeaderboard(){//imprecisazione mette gli uguali sopra invece che sotto
+        int i=0;
 
-	class GestoreAudio{
+		try{
+			FileReader fR = new FileReader("./leaderboard.txt");
+			BufferedReader reader = new BufferedReader(fR);
+
+			Vector<String> testo = new Vector<>();
+			String riga;
+			String[] parti;
+			riga = reader.readLine();
+			while(riga != null){
+				testo.add(riga);
+				parti = riga.split(" - ");
+				if(parti.length == 2 && i < Integer.parseInt(parti[1])){
+					i++;
+				}
+				riga = reader.readLine();
+			}
+			reader.close();
+
+			FileWriter fW = new FileWriter("./leaderboard.txt");
+			PrintWriter writer = new PrintWriter(fW);
+
+			testo.add(i, txtGiocatore.getText().trim()+" - "+righe);
+
+			for(String linea : testo){
+				writer.println(linea);
+			}
+			writer.close();
+
+		}catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	private class GestoreAudio{
 		private Clip clip;
 
 		void suona(String nomeFile, boolean loop){
@@ -227,7 +311,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 		}
     }
 
-	class PassaTempo implements ActionListener{
+	private class PassaTempo implements ActionListener{
 
 		public void actionPerformed(ActionEvent e){
 			if(gameOver){
@@ -247,7 +331,19 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 		}
 	}
 
-	class TastoPremuto implements KeyListener{
+	private class ClickInvia implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			if(!txtGiocatore.getText().trim().isEmpty()){
+				btnInvia.setEnabled(false);
+				txtGiocatore.setEditable(false);
+				aggiungiInLeaderboard();
+			}else{
+				txtGiocatore.setText("");
+			}
+		}
+	}
+
+	private class TastoPremuto implements KeyListener{
 		public void keyPressed(KeyEvent e){
 			int key = e.getExtendedKeyCode();
 
@@ -302,16 +398,16 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 
 	}
 
-    void cancellaBlocchi(){
+	private void cancellaBlocchi(){
 		for(int i=0; i<CostantiTetris.HEIGHT; i++){
 			for(int j=0; j<CostantiTetris.WIDTH; j++){
-				lblDisplay[i][j].setBackground(Color.BLACK); //TODO: forse mettilo trasparente
+				lblDisplay[i][j].setBackground(Color.BLACK);
 				lblDisplay[i][j].setIcon(null);
 			}
 		}
     }
 
-	void disegnaBlocchi(){
+	private void disegnaBlocchi(){
 		for(int i=0; i<CostantiTetris.HEIGHT; i++){
 			for(int j=0; j<CostantiTetris.WIDTH; j++){
 				lblDisplay[i][j].setBackground(blocchiSolidi[i][j].colore);
@@ -321,7 +417,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 		}
     }
 
-    void aggiornaScorta(){
+    private void aggiornaScorta(){
 		for(int i=0; i<4; i++){
 			for(int j=0; j<4; j++){
 
@@ -335,7 +431,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 			}
 		}
     }
-    void aggiornaProssimi(){
+    private void aggiornaProssimi(){
 
 		for(int i=0; i<CostantiTetris.N_NEXT; i++){
 			for(int j=0; j<4; j++){
@@ -352,7 +448,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 		}
     }
 
-	void nuovoPezzo(){
+	private void nuovoPezzo(){
 		if(!gameOver){
 			pezzo = prossimi.removeFirst();
 			prossimi.addLast(generaPezzo.random());
@@ -361,7 +457,7 @@ class Tetris{ //TODO: https://tetris.wiki/Tetris_Guideline
 		}
 	}
 
-	void scortaPezzo(){ //TODO: mostra pezzo di scorta
+	private void scortaPezzo(){
 		if(pezzo.isScortaDisponibile()){
 			if(scorta != null){
 				Pezzo tmp = scorta;

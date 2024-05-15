@@ -1,7 +1,7 @@
 /*
 Autore: Dario Nappi, Lorenzo Coriani
 Classe: 4^F
-Data: per ill 15/5/24
+Data: per il 15/5/24
 Testo: Tetris
 */
 import java.awt.*;

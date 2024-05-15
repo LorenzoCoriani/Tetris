@@ -1,7 +1,7 @@
 /*
 Autore: Dario Nappi, Lorenzo Coriani
 Classe: 4^F
-Data: per ill 15/5/24
+Data: per il 15/5/24
 Testo: Tetris
 */
 import java.awt.*;
@@ -176,7 +176,7 @@ class Pezzo{
 	}
 
 
-    int solidificaPezzo(){//restituisce se una riga è cancellata //TODO: sposta in una classe apposita per blocchiSolidi
+    int solidificaPezzo(){//restituisce se una riga è cancellata
 		boolean gameOver=false;
 		boolean riga=true; //riga trovata
 
@@ -188,7 +188,7 @@ class Pezzo{
 					blocchiSolidi[y+i][x+j].occupato = blocchi[i][j];
 					blocchiSolidi[y+i][x+j].colore = tipo;
 					lblDisplay[y+i][x+j].setBackground(tipo);
-					lblDisplay[i+y][j+x].setIcon(immagine);//TODO: potresti sostituire immagine mettere "animazione"
+					lblDisplay[i+y][j+x].setIcon(immagine);
 					if(y+i == 0)
 						gameOver = true;
 				}
@@ -266,7 +266,7 @@ class Pezzo{
 		return y >= 0 && y < CostantiTetris.HEIGHT && x >= 0 && x < CostantiTetris.WIDTH;
 	}
 
-    private void cancellaRiga(int riga){ //TODO: sposta in una classe apposita per blocchiSolidi
+    private void cancellaRiga(int riga){
 		for(int i=0; i<CostantiTetris.WIDTH; i++){
 			lblDisplay[riga][i].setBackground(Color.BLACK);
 			lblDisplay[riga][i].setIcon(null);
