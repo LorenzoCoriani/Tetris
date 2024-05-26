@@ -34,11 +34,11 @@ class GeneratorePezzo{
 
 		if(lista.isEmpty()){
 			riempiLista();
-			//System.out.println("\n");
+			//System.out.println("\n"); //test 7bag
 		}
 
 		let_estratta = lista.remove(rand);
-        //System.out.println(""+let_estratta);
+        //System.out.println(""+let_estratta); //test 7bag
 
 		switch(let_estratta){
 			case 'I':

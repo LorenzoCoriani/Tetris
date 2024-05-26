@@ -35,7 +35,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 	JButton btnInvia;
 
 	boolean gameOver=false;
-	int righe=0;
+	int righe=0; // manca il label righe durante il gioco
 
 	JLabel[][] lblDisplay;
 	JLabel[][] lblScorta;
@@ -43,6 +43,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 
 	JLabel lblHold;//scritta HOLD
 	JLabel lblNext;//scritta NEXT
+	JLabel lblRighe;
 
 	Font font = new Font("Arial", Font.PLAIN,48);
 	Border bordo = BorderFactory.createLineBorder(Color.DARK_GRAY, 2);
@@ -65,7 +66,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 
 	Tetris(){
 		audio.suona("./tetris_music.wav", true);
-		frame = new JFrame();
+		frame = new JFrame("TETRIS");
 		frame.getContentPane().setBackground(CostantiTetris.BACKGROUND_COLOR);
 		frame.setLayout(new GridBagLayout());
 
@@ -91,7 +92,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 		pnlPezzoScorta = new JPanel(new GridLayout(4,4));
 		pnlPezzoScorta.setBorder(bordo);
 		//
-		pnlProssimi = new JPanel(new GridLayout(CostantiTetris.N_NEXT+1, 1));//+1 per JLabel "NEXT"
+		pnlProssimi = new JPanel(new GridLayout(CostantiTetris.N_NEXT+2, 1));//+2 per JLabel "NEXT", JLabel righe
 		pnlProssimi.setOpaque(false);
 
 		lblDisplay = new JLabel[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
@@ -99,22 +100,27 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 
 		lblHold = new JLabel("HOLD");
 		lblNext = new JLabel("NEXT");
+		lblRighe = new JLabel("<html>RIGHE<br><p style=\"text-align: center;\">0</p></html>");
 		//
 		lblHold.setForeground(Color.WHITE);
 		lblNext.setForeground(Color.WHITE);
+		lblRighe.setForeground(Color.WHITE);
 		//
 		lblHold.setOpaque(false);
 		lblNext.setOpaque(false);
+		lblRighe.setOpaque(false);
 		//
 		lblHold.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNext.setHorizontalAlignment(SwingConstants.CENTER);
+		lblRighe.setHorizontalAlignment(SwingConstants.CENTER);
 		//
 		lblHold.setVerticalAlignment(SwingConstants.NORTH);
 		lblNext.setVerticalAlignment(SwingConstants.NORTH);
+		lblRighe.setVerticalAlignment(SwingConstants.NORTH);
 		//
 		lblHold.setFont(font);
 		lblNext.setFont(font);
-
+		lblRighe.setFont(font);
 
 		blocchiSolidi = new Casella[CostantiTetris.HEIGHT][CostantiTetris.WIDTH];
 
@@ -197,6 +203,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 		pnlScorta.add(lblHold);
 
 		pnlProssimi.add(lblNext);
+		pnlProssimi.add(lblRighe);
 
 		frame.add(pnlScorta, constrPnlScorta);
 		frame.add(pnlGioco, constrPnlGioco);
@@ -249,7 +256,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 		dlgGameOver.setVisible(true);
 	}
 
-	private void aggiungiInLeaderboard(){//imprecisazione mette gli uguali sopra invece che sotto
+	private void aggiungiInLeaderboard(){
         int i=0;
 
 		try{
@@ -263,7 +270,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 			while(riga != null){
 				testo.add(riga);
 				parti = riga.split(" - ");
-				if(parti.length == 2 && i < Integer.parseInt(parti[1])){
+				if(parti.length == 2 && righe <= Integer.parseInt(parti[1])){
 					i++;
 				}
 				riga = reader.readLine();
@@ -322,6 +329,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 				disegnaBlocchi();
 				if(pezzo.spostaPezzo(0, 1)){ //se si è solidificato
 					righe += pezzo.solidificaPezzo();// se una riga è cancellata
+					lblRighe.setText("<html>RIGHE<br><p style=\"text-align: center;\">"+righe+"</p></html>");
 					nuovoPezzo();
 				}
 				if(!pezzo.disegna()){//se non è disegnabile
@@ -384,6 +392,7 @@ class Tetris{//https://tetris.wiki/Tetris_Guideline
 
 			if(solidificato){
 				righe += pezzo.solidificaPezzo();
+				lblRighe.setText("<html>RIGHE<br><p style=\"text-align: center;\">"+righe+"</p></html>");
 				nuovoPezzo();
 			}
 
